@@ -16,11 +16,9 @@ mcleung@stanford.edu
 """
 
 from ctypes import c_long, c_buffer, c_float, windll, pointer
-
+# import ctypes
 import os
 print os.getcwd()
-
-
 
 class APTMotor():
     def __init__(self, SerialNum=None, HWTYPE=31, verbose=False):
@@ -43,7 +41,9 @@ class APTMotor():
 		
         self.verbose = verbose
         self.Connected = False
-        dllname = os.path.join(os.path.dirname(__file__), 'APTx86.dll')
+        # dllname = os.path.join(os.path.dirname(__file__), 'APTx86.dll')
+        dllname = os.path.join(os.path.dirname(__file__), 'APT.dll')
+        print dllname
         if not os.path.exists(dllname):
             print "ERROR: DLL not found"
         self.aptdll = windll.LoadLibrary(dllname)

@@ -15,8 +15,8 @@ mcleung@stanford.edu
 from PyAPT import APTMotor
 import time
 
-# Create object corresponding to the motor.
-Motor1 = APTMotor(83828393, HWTYPE=31) # The number should correspond to the serial number.
+# Create object corresponding to the motor.83840805
+Motor1 = APTMotor(83840805, HWTYPE=31) # The number should correspond to the serial number.
 # Use help APTMotor to obtain full list of hardware (HW) supported.
 
 # Note: You can control multiple motors by creating more APTMotor Objects
@@ -29,7 +29,7 @@ print(Motor1.getPos())
 # Serial numbers can be added later by using setSerialNumber and initializeHardwareDevice
 # This functionality is particularly useful in the GUI setup.
 Motor2 = APTMotor()
-Motor2.setSerialNumber(83828393)
+Motor2.setSerialNumber(83829690)
 Motor2.initializeHardwareDevice()
 print(Motor2.getPos())
 
