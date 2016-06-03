@@ -50,10 +50,10 @@ class TwoAxisPlatform:
 import sys
 sys.path.insert(0, '../Driver')
 from PyAPT import APTMotor
-Create object corresponding to the motor.83840805
+# Create object corresponding to the motor.83840805
 MotorX = APTMotor(83829690, HWTYPE=31) # The number should correspond to the serial number.
 MotorY = APTMotor(83840805, HWTYPE=31) # The number should correspond to the serial number.
-Use help APTMotor to obtain full list of hardware (HW) supported.
+# Use help APTMotor to obtain full list of hardware (HW) supported.
 
 # Homing Two Motors
 
@@ -99,8 +99,8 @@ for point in polyShape:
         plt.plot(nextMove[0], nextMove[1], 'ro')
         plt.draw()
         plt.pause(0.001)
-        MotorX.mAbs(origin[0])
-        MotorY.mAbs(origin[1])
+        MotorX.mAbs(nextMove[0] + origin[0])
+        MotorY.mAbs(nextMove[1] + origin[1])
 
 
 pathArray = np.asarray(pathList)
