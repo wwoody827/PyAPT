@@ -51,7 +51,7 @@ class APTMotor():
         self.aptdll.APTInit()
         #print 'APT initialized'
         self.HWType = c_long(HWTYPE)
-        self.blCorr = 0.10 #100um backlash correction
+        self.blCorr = 0.010 #100um backlash correction
         if SerialNum is not None:
             if self.verbose: print "Serial is", SerialNum
             self.SerialNum = c_long(SerialNum)

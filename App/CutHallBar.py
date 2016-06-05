@@ -108,11 +108,12 @@ sys.path.insert(0, '../Driver')
 import argparse
 parser = argparse.ArgumentParser(prog='Menu', description='description')
 parser.add_argument(
-    'cmd', choices=['motorinit', 'origin', 'goto', 'done', 'redo', 'home', 'quit'])
+    'cmd', choices=['motorinit', 'origin', 'goto', 'done', 'redo', 'home', 'quit', 'pos'])
 
 motor = argparse.ArgumentParser(prog='Motor', description='description')
 motor.add_argument("-x", type=float, default=0)
 motor.add_argument("-y", type=float, default=0)
+motor.add_argument("-q", action = "store_true", default=False)
 print("Adjust Origin Position")
 
 # Wait for adjust
@@ -140,16 +141,29 @@ while True:
         # Use help APTMotor to obtain full list of hardware (HW) supported.
 
     elif args.cmd in ['origin']:
-        origin = [MotorX.getPos(), MotorX.getPos()]
+        origin = [MotorX.getPos(), MotorY.getPos()]
+        print origin
+    elif args.cmd in ['pos']:
+        pos = [MotorX.getPos(), MotorY.getPos()]
+        print pos
 
     elif args.cmd in ['goto']:
-        astr = raw_input('Move: ')
-        args = motor.parse_args(astr.split())
-        print args.x
-        print args.y
-        MotorX.mRel(args.x)
-        MotorY.mRel(args.y)
-        print("End")
+        while True:
+            astr = raw_input('Move: ')
+            try:
+                args = motor.parse_args(astr.split())
+            except SystemExit:
+             # trap argparse error message
+                print 'error'
+                continue
+
+            print args.x
+            print args.y
+            MotorX.mRel(args.x)
+            MotorY.mRel(args.y)
+            print("End")
+            if args.q:
+                break
 
     elif args.cmd in ['home']:
         print("Homing X")
@@ -166,7 +180,7 @@ while True:
 
 ######### Reading Hallbar shape ##########
 print("Reading Cutting Path")
-with open('sixterminal 250um.txt') as f:
+with open('eightterminal 250um.txt') as f:
     polyShapeList = []
     for line in f:
         line = line.split()  # to deal with blank
@@ -199,15 +213,20 @@ print(boundary)
 plt.plot(boundary[:, 0], boundary[:, 1], 'g', linewidth=2.0)
 ######### Check Pattern and Run ##############
 pattern = argparse.ArgumentParser(prog='Pattern', description='description')
-pattern.add_argument('cmd', choices=['check', 'run', 'goto', 'quit', 'origin'])
+pattern.add_argument('cmd', choices=['pos', 'check', 'run', 'goto', 'quit', 'origin'])
 
 
 while True:
     astr = raw_input("'check','run', 'goto', 'quit', 'origin'$: ")
-    args = pattern.parse_args(astr.split())
+    try:
+        args = pattern.parse_args(astr.split())
+    except SystemExit:
+        # trap argparse error message
+        print 'error'
+        continue
 
     if args.cmd in ["run"]:
-        origin = [MotorX.getPos(), MotorX.getPos()]
+        origin = [MotorX.getPos(), MotorY.getPos()]
         platform = TwoAxisPlatform()
         pathList = path.tolist()
         pathTraveledX = []
@@ -231,27 +250,42 @@ while True:
         plt.pause(1)
 
     elif args.cmd in ["check"]:
-        origin = [MotorX.getPos(), MotorX.getPos()]
+        origin = [MotorX.getPos(), MotorY.getPos()]
+        print("origin:")
+        print(origin)
         platform = TwoAxisPlatform()
         pathList = boundary.tolist()
         pathList.append([0, 0])
         pathTraveledX = []
         pathTraveledY = []
+        print("Start Checking Boundary:")
         for point in pathList:
          # Set next target positino, read from Hallbar
             MotorX.mAbs(point[0] + origin[0])
             MotorY.mAbs(point[1] + origin[1])
+            print point
 
         plt.pause(1)
 
     elif args.cmd in ["goto"]:
-        astr = raw_input('Move: ')
-        args = motor.parse_args(astr.split())
-        print args.x
-        print args.y
-        MotorX.mRel(args.x)
-        MotorY.mRel(args.y)
-        print("End")
+        while True:
+            astr = raw_input('Move: ')
+            try:
+                args = motor.parse_args(astr.split())
+            except SystemExit:
+             # trap argparse error message
+                print 'error'
+                continue
+            print args.x
+            print args.y
+            MotorX.mRel(args.x)
+            MotorY.mRel(args.y)
+            print("End")
+            if args.q:
+                break
+    elif args.cmd in ['pos']:
+        pos = [MotorX.getPos(), MotorY.getPos()]
+        print pos
 
     elif args.cmd in ["origin"]:
         MotorX.mAbs(origin[0])
