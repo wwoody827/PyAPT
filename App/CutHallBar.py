@@ -234,24 +234,13 @@ while True:
         origin = [MotorX.getPos(), MotorX.getPos()]
         platform = TwoAxisPlatform()
         pathList = boundary.tolist()
-        pathList.append(origin)
+        pathList.append([0, 0])
         pathTraveledX = []
         pathTraveledY = []
         for point in pathList:
          # Set next target positino, read from Hallbar
-            platform.setTarget(point)
-            while(~platform.inPostion()):  # Move to target
-                nextMove = platform.nextStep()
-                print(nextMove)
-                platform.resetPos(nextMove)
-                pathTraveledX.append(nextMove[0])
-                pathTraveledY.append(nextMove[1])
-                plt.plot(pathTraveledX, pathTraveledY, 'y')
-                plt.draw()
-                plt.pause(0.5)
-
-                MotorX.mAbs(nextMove[0] + origin[0])
-                MotorY.mAbs(nextMove[1] + origin[1])
+            MotorX.mAbs(point[0] + origin[0])
+            MotorY.mAbs(point[1] + origin[1])
 
         plt.pause(1)
 
