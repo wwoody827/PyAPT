@@ -91,25 +91,64 @@ def createPath(polyShape, offset=0.001, loop=2):
 
 ########## Initialize motors #############
 
-# import sys
-# sys.path.insert(0, '../Driver')
-# from PyAPT import APTMotor
-# # Create object corresponding to the motor.83840805
-# MotorX = APTMotor(83829690, HWTYPE=31) # The number should correspond to the serial number.
-# MotorY = APTMotor(83840805, HWTYPE=31) # The number should correspond to the serial number.
-# # Use help APTMotor to obtain full list of hardware (HW) supported.
+import sys
+sys.path.insert(0, '../Driver')
+from PyAPT import APTMotor
+# Create object corresponding to the motor.83840805
+# The number should correspond to the serial number.
+MotorX = APTMotor(83829690, HWTYPE=31)
+# The number should correspond to the serial number.
+MotorY = APTMotor(83840805, HWTYPE=31)
+# Use help APTMotor to obtain full list of hardware (HW) supported.
 
-# # Homing Two Motors
+# Homing Two Motors
 
-# print("Homing X")
-# MotorX.go_home()
-# print("Homing Y")
-# MotorY.go_home()
-# print("Homing End")
+import argparse
+parser = argparse.ArgumentParser(prog='Menu', description='description')
+parser.add_argument(
+    'cmd', choices=['origin', 'goto', 'done', 'redo', 'home', 'quit'])
 
-# origin = [10, 10]
-# MotorX.mAbs(origin[0])
-# MotorY.mAbs(origin[1])
+motor = argparse.ArgumentParser(prog='Motor', description='description')
+motor.add_argument("-x", type=float, default=0)
+motor.add_argument("-y", type=float, default=0)
+print("Adjust Origin Position")
+
+# Wait for adjust
+origin = [0, 0]
+while True:
+    astr = raw_input('$: ')
+    # print astr
+    try:
+        args = parser.parse_args(astr.split())
+    except SystemExit:
+        # trap argparse error message
+        print 'error'
+        continue
+    if args.cmd in ['done']:
+        origin = [MotorX.getPos(), MotorX.getPos()]
+        break
+    elif args.cmd in ['origin']:
+        origin = [MotorX.getPos(), MotorX.getPos()]
+
+    elif args.cmd in ['goto']:
+        astr = raw_input('Move: ')
+        args = motor.parse_args(astr.split())
+        print args.x
+        print args.y
+        MotorX.mRel(args.x)
+        MotorY.mRel(args.y)
+        print("End")
+
+    elif args.cmd in ['home']:
+        print("Homing X")
+        MotorX.go_home()
+        print("Homing Y")
+        MotorY.go_home()
+        print("Homing End")
+        continue
+    else:
+        continue
+
 
 # Note: You can control multiple motors by creating more APTMotor Objects
 
@@ -127,12 +166,11 @@ with open('sixterminal 250um.txt') as f:
 polyShapeList.append(polyShapeList[0])
 polyShape = np.asarray(polyShapeList)
 
-######### Read Hallbar as np array #########
-
+######### End: Read Hallbar as np array #########
 
 
 ######### Generate Path, with loop #########
-path = createPath(polyShape, offset=0.005, loop=5)
+path = createPath(polyShape, offset=0.01, loop=5)
 print(path.shape)
 plt.fig = plt.plot(polyShape[:, 0], polyShape[:, 1])
 plt.plot(path[:, 0], path[:, 1], 'r')
@@ -141,25 +179,52 @@ plt.plot(polyShape[:, 0], polyShape[:, 1], 'b')
 
 plt.pause(1)
 
-#
-platform = TwoAxisPlatform()
-pathList = path.tolist()
-pathTraveledX = []
-pathTraveledY = []
-for point in pathList:
-    platform.setTarget(point)  # Set next target positino, read from Hallbar
-    while(~platform.inPostion()):  # Move to target
-        nextMove = platform.nextStep()
-        print(nextMove)
-        platform.resetPos(nextMove)
-        pathTraveledX.append(nextMove[0])
-        pathTraveledY.append(nextMove[1])
-        
-        plt.plot(pathTraveledX, pathTraveledY, 'y')
-        plt.draw()
-        plt.pause(0.001)
 
-        # MotorX.mAbs(nextMove[0] + origin[0])
-        # MotorY.mAbs(nextMove[1] + origin[1])
+######### Check for boundary ##############
+pattern = argparse.ArgumentParser(prog='Pattern', description='description')
+pattern.add_argument('cmd', choices=['check','run', 'goto', 'quit'])
+print("choices=['check','run', 'goto', 'quit']")
 
-plt.pause(1)
+while True:
+    astr = raw_input('Pattern Check$: ')
+    args = pattern.parse_args(astr.split())
+    if args.cmd in ["run"]:
+        origin = [MotorX.getPos(), MotorX.getPos()]
+        platform = TwoAxisPlatform()
+        pathList = path.tolist()
+        pathTraveledX = []
+        pathTraveledY = []
+        for point in pathList:
+         # Set next target positino, read from Hallbar
+            platform.setTarget(point)
+            while(~platform.inPostion()):  # Move to target
+                nextMove = platform.nextStep()
+                print(nextMove)
+                platform.resetPos(nextMove)
+                pathTraveledX.append(nextMove[0])
+                pathTraveledY.append(nextMove[1])
+                plt.plot(pathTraveledX, pathTraveledY, 'y')
+                plt.draw()
+                plt.pause(0.001)
+
+                MotorX.mAbs(nextMove[0] + origin[0])
+                MotorY.mAbs(nextMove[1] + origin[1])
+
+        plt.pause(1)
+
+    elif args.cmd in ["goto"]:
+        astr = raw_input('Move: ')
+        args = motor.parse_args(astr.split())
+        print args.x
+        print args.y
+        MotorX.mRel(args.x)
+        MotorY.mRel(args.y)
+        print("End")
+
+    elif args.cmd in ["quit"]:
+        break
+    else:
+        continue
+########## End: Check for boundary ##############
+
+
